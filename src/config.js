@@ -160,6 +160,8 @@ c3_chart_internal_fn.getDefaultConfig = function () {
         line_connectNull: false,
         line_step_type: 'step',
         // bar
+        bar_bullet: undefined,
+        bar_offset: undefined,
         bar_width: undefined,
         bar_width_ratio: 0.6,
         bar_width_max: undefined,

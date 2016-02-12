@@ -48,10 +48,26 @@ c3_chart_internal_fn.redrawBar = function (drawBar, withTransition) {
             .style("opacity", 1)
     ];
 };
-c3_chart_internal_fn.getBarW = function (axis, barTargetsNum) {
-    var $$ = this, config = $$.config,
-        w = typeof config.bar_width === 'number' ? config.bar_width : barTargetsNum ? (axis.tickInterval() * config.bar_width_ratio) / barTargetsNum : 0;
-    return config.bar_width_max && w > config.bar_width_max ? config.bar_width_max : w;
+c3_chart_internal_fn.getBarW = function(axis, barTargetsNum)
+{
+    var $$ = this, config = $$.config, w = undefined;
+    if(typeof config.bar_width === 'number')
+    {
+      var v = config.bar_width;
+      v = config.bar_width_max && v > config.bar_width_max ? config.bar_width_max : v;
+      w = function(d, i){ return v;};
+    }
+    else if(c3.chart.internal.fn.isFunction(config.bar_width))
+    {
+      w = config.bar_width
+    }
+    else
+    {
+      var v = barTargetsNum ? (axis.tickInterval() * config.bar_width_ratio) / barTargetsNum : 0;
+      v = config.bar_width_max && v > config.bar_width_max ? config.bar_width_max : v;
+      w = function(d, i){ return v;};
+    }
+    return w;
 };
 c3_chart_internal_fn.getBars = function (i, id) {
     var $$ = this;
@@ -93,12 +109,12 @@ c3_chart_internal_fn.generateGetBarPoints = function (barIndices, isSub) {
         barW = $$.getBarW(axis, barTargetsNum),
         barX = $$.getShapeX(barW, barTargetsNum, barIndices, !!isSub),
         barY = $$.getShapeY(!!isSub),
-        barOffset = $$.getShapeOffset($$.isBarType, barIndices, !!isSub),
+        barOffset = c3.chart.internal.fn.isFunction($$.config.bar_offset) ? $$.config.bar_offset : $$.getShapeOffset($$.isBarType, barIndices, !!isSub),
         yScale = isSub ? $$.getSubYScale : $$.getYScale;
     return function (d, i) {
         var y0 = yScale.call($$, d.id)(0),
             offset = barOffset(d, i) || y0, // offset is for stacked bar chart
-            posX = barX(d), posY = barY(d);
+            posX = barX(d, i), posY = barY(d);
         // fix posY not to overflow opposite quadrant
         if ($$.config.axis_rotated) {
             if ((0 < d.value && posY < y0) || (d.value < 0 && y0 < posY)) { posY = y0; }
@@ -107,8 +123,8 @@ c3_chart_internal_fn.generateGetBarPoints = function (barIndices, isSub) {
         return [
             [posX, offset],
             [posX, posY - (y0 - offset)],
-            [posX + barW, posY - (y0 - offset)],
-            [posX + barW, offset]
+            [posX + barW(d, i), posY - (y0 - offset)],
+            [posX + barW(d, i), offset]
         ];
     };
 };

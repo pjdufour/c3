@@ -33,7 +33,7 @@ c3_chart_internal_fn.getYDomainMax = function (targets) {
     var $$ = this, config = $$.config,
         ids = $$.mapToIds(targets), ys = $$.getValuesAsIdKeyed(targets),
         j, k, baseId, idsInGroup, id, hasPositiveValue;
-    if (config.data_groups.length > 0) {
+    if (config.data_groups.length > 0 && ! config.bar_bullet ) {
         hasPositiveValue = $$.hasPositiveValueInTargets(targets);
         for (j = 0; j < config.data_groups.length; j++) {
             // Determine baseId

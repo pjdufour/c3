@@ -18,9 +18,10 @@ c3_chart_internal_fn.getShapeIndices = function (typeFilter) {
 };
 c3_chart_internal_fn.getShapeX = function (offset, targetsNum, indices, isSub) {
     var $$ = this, scale = isSub ? $$.subX : $$.x;
-    return function (d) {
+    return function (d, i) {
         var index = d.id in indices ? indices[d.id] : 0;
-        return d.x || d.x === 0 ? scale(d.x) - offset * (targetsNum / 2 - index) : 0;
+        if(d.x || d.x === 0) { return scale(d.x) - (c3.chart.internal.fn.isFunction(offset) ? offset(d, i) : offset) * (targetsNum / 2 - index); }
+        else { return 0; }
     };
 };
 c3_chart_internal_fn.getShapeY = function (isSub) {
